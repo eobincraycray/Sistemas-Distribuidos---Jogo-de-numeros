@@ -6,17 +6,29 @@ public class Servidor {
 
     public static void main(String[] args) {
 
-       Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
         System.out.println("Digite uma porta - Apenas números:");
         int porta = scanner.nextInt();  // Pegando a porta digitada
         
         try {     
             ServerSocket servidor = new ServerSocket(porta);
-            System.out.println("Servidor iniciado na porta " + porta);
+           
+            String ipServidor = InetAddress.getLocalHost().getHostAddress();
+            System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
             System.out.println("Aguardando conexão do cliente...");
 
             Socket cliente = servidor.accept();
             System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress());
+
+            BufferedReader leitor = new BufferedReader (new InputStreamReader (cliente.getInputStream()));
+            PrintWriter escritor = new PrintWriter( cliente.getOutputStream(), true); 
+
+            String mensagem = leitor.readLine();
+            System.out.println("cliente"+ mensagem);
+
+            escritor.println(" Sua mensagem foi recebida");
+            cliente.close();
+
 
         } catch (IOException e) {
             e.printStackTrace(); 
