@@ -1,4 +1,3 @@
-package client;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -15,7 +14,6 @@ public class TCPServerClass {
 
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
             String ipServidor = InetAddress.getLocalHost().getHostAddress();
-            System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
             System.out.println("Servidor aguardando jogadores ...");
 
             Socket[] players = new Socket[3];
@@ -33,7 +31,11 @@ public class TCPServerClass {
             do {
                 int[] values = new int[3];
                 for (int i = 0; i < 3; i++) {
-                    System.out.println("Digite um valor de 0 a 100:");
+                    exits[i].println("Digite um valor");
+                }
+
+                for (int i = 0; i < 3; i++) {
+                    System.out.println("Aguardando valor do jogador: "+ (i + 1));
                     values[i] = Integer.parseInt(entries[i].readLine());
                 }
                 double media = (values[0] + values[1] + values[2]) / 3.0;
@@ -94,5 +96,6 @@ public class TCPServerClass {
         }catch (NumberFormatException e){
             System.out.println("Erro ao ler o numero: "+ e.getMessage());
         }
+        scan.close();
     }
 }
