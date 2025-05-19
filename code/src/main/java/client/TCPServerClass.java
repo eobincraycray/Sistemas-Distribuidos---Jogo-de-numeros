@@ -1,3 +1,4 @@
+package client;
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
@@ -13,6 +14,8 @@ public class TCPServerClass {
         int[] pontuacao = {0, 0, 0};
 
         try (ServerSocket serverSocket = new ServerSocket(serverPort)) {
+            String ipServidor = InetAddress.getLocalHost().getHostAddress();
+            System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
             System.out.println("Servidor aguardando jogadores ...");
 
             Socket[] players = new Socket[3];
