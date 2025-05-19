@@ -10,31 +10,35 @@ public class Servidor {
         System.out.println("Digite uma porta - Apenas números:");
         int porta = scanner.nextInt();  // Pegando a porta digitada
         
-        try {     
-            ServerSocket servidor = new ServerSocket(porta);
-           
-            String ipServidor = InetAddress.getLocalHost().getHostAddress();
-            System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
-            System.out.println("Aguardando conexão do cliente...");
+        try (ServerSocket servidor = new ServerSocket(porta);) {   
 
-            Socket cliente = servidor.accept();
-            System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress());
+            while (true) {
+                String ipServidor = InetAddress.getLocalHost().getHostAddress();
+                System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
+                System.out.println("Aguardando conexão do cliente...");
 
-            BufferedReader leitor = new BufferedReader (new InputStreamReader (cliente.getInputStream()));
-            PrintWriter escritor = new PrintWriter( cliente.getOutputStream(), true); 
+                Socket cliente = servidor.accept();
+                System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress());
 
-            String mensagem = leitor.readLine();
-            System.out.println("cliente"+ mensagem);
+                BufferedReader leitor = new BufferedReader (new InputStreamReader (cliente.getInputStream()));
+                PrintWriter escritor = new PrintWriter( cliente.getOutputStream(), true); 
 
-            escritor.println(" Sua mensagem foi recebida");
-            cliente.close();
+                String mensagem = leitor.readLine();
+                System.out.println("cliente"+ mensagem);
 
+                escritor.println(" Sua mensagem foi recebida");
+                cliente.close();
+                    
+            }
 
-        } catch (IOException e) {
-            e.printStackTrace(); 
+        } catch (IOException exception) {
+            exception.printStackTrace(); 
         
     }   
 
 }
 
 }
+
+// 1 - Fase: Digite um numero de 0 á 100 ( Eu tiro a media, multiplico por 0.8 e quem tira o resultado mais proximo da meta fica com (0) o segundo fica com (-1) e o ultimo (-2))
+// 2 - Fase: 

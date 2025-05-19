@@ -30,8 +30,8 @@ public class Cliente {
             
             
             
-            } catch (IOException e) {
-                e.printStackTrace(); 
+            } catch (IOException exception) {
+                exception.printStackTrace(); 
         
             }  
     } 
