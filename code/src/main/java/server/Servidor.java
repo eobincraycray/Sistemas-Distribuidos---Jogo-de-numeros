@@ -1,44 +1,94 @@
-import java.net.*;
 import java.io.*;
-import java.util.Scanner;
+import java.net.*;
+import java.util.*;
 
 public class Servidor {
 
-    public static void main(String[] args) {
+    private static final int NUM_JOGADORES = 3;
+    private static final int META_PONTOS = 3;
 
+    public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Digite uma porta - Apenas números:");
-        int porta = scanner.nextInt();  // Pegando a porta digitada
-        
-        try (ServerSocket servidor = new ServerSocket(porta);) {   
+        int porta = scanner.nextInt();
 
-            while (true) {
-                String ipServidor = InetAddress.getLocalHost().getHostAddress();
-                System.out.println("Servidor iniciado em " + ipServidor + " na porta " + porta);
-                System.out.println("Aguardando conexão do cliente...");
+        ServerSocket servidor = new ServerSocket(porta);
+        System.out.println("Servidor iniciado em " + InetAddress.getLocalHost().getHostAddress() + " na porta " + porta);
+        System.out.println("Aguardando conexão de " + NUM_JOGADORES + " jogadores...");
 
-                Socket cliente = servidor.accept();
-                System.out.println("Cliente conectado: " + cliente.getInetAddress().getHostAddress());
+        Socket[] jogadores = new Socket[NUM_JOGADORES];
+        PrintWriter[] escritores = new PrintWriter[NUM_JOGADORES];
+        BufferedReader[] leitores = new BufferedReader[NUM_JOGADORES];
+        int[] pontos = new int[NUM_JOGADORES];
 
-                BufferedReader leitor = new BufferedReader (new InputStreamReader (cliente.getInputStream()));
-                PrintWriter escritor = new PrintWriter( cliente.getOutputStream(), true); 
+        // Conectar os jogadores
+        for (int i = 0; i < NUM_JOGADORES; i++) {
+            jogadores[i] = servidor.accept();
+            escritores[i] = new PrintWriter(jogadores[i].getOutputStream(), true);
+            leitores[i] = new BufferedReader(new InputStreamReader(jogadores[i].getInputStream()));
+            System.out.println("Jogador " + (i + 1) + " conectado: " + jogadores[i].getInetAddress().getHostAddress());
+        }
 
-                String mensagem = leitor.readLine();
-                System.out.println("cliente"+ mensagem);
+        boolean jogoAtivo = true;
 
-                escritor.println(" Sua mensagem foi recebida");
-                cliente.close();
-                    
+        while (jogoAtivo) {
+            // Enviar mensagem de regras
+            for (int i = 0; i < NUM_JOGADORES; i++) {
+                escritores[i].println("Regras do Jogo: Envie um número entre 0 e 100. Quem chegar mais próximo de 80% da média dos valores vence a rodada!");
             }
 
-        } catch (IOException exception) {
-            exception.printStackTrace(); 
-        
-    }   
+            System.out.println("Mensagem cortesia enviada. Aguardando jogadores...");
 
+            int[] numeros = new int[NUM_JOGADORES];
+            double soma = 0;
+
+            // Receber os números dos jogadores
+            for (int i = 0; i < NUM_JOGADORES; i++) {
+                try {
+                    String recebido = leitores[i].readLine();
+                    numeros[i] = Integer.parseInt(recebido);
+                    soma += numeros[i];
+                } catch (Exception e) {
+                    escritores[i].println("Erro ao receber número. Encerrando.");
+                    jogadores[i].close();
+                    return;
+                }
+            }
+
+            double media = soma / NUM_JOGADORES;
+            double alvo = media * 0.8;
+
+            System.out.println("Média: " + media + ", Alvo (80%): " + alvo);
+
+            // Determinar quem ficou mais próximo
+            double menorDiferenca = Double.MAX_VALUE;
+            int vencedorRodada = -1;
+            for (int i = 0; i < NUM_JOGADORES; i++) {
+                double diferenca = Math.abs(numeros[i] - alvo);
+                if (diferenca < menorDiferenca) {
+                    menorDiferenca = diferenca;
+                    vencedorRodada = i;
+                }
+            }
+
+            pontos[vencedorRodada]++;
+            System.out.println("Jogador " + (vencedorRodada + 1) + " venceu a rodada e agora tem " + pontos[vencedorRodada] + " ponto(s).");
+
+            // Enviar pontuação aos jogadores
+            for (int i = 0; i < NUM_JOGADORES; i++) {
+                escritores[i].println("Resultado da rodada: Jogador " + (vencedorRodada + 1) + " venceu. Sua pontuação: " + pontos[i]);
+            }
+
+            // Verificar fim de jogo
+            if (pontos[vencedorRodada] >= META_PONTOS) {
+                for (int i = 0; i < NUM_JOGADORES; i++) {
+                    escritores[i].println("FIM DE JOGO! Jogador " + (vencedorRodada + 1) + " venceu com " + pontos[vencedorRodada] + " pontos.");
+                    jogadores[i].close();
+                }
+                jogoAtivo = false;
+            }
+        }
+
+        servidor.close();
+    }
 }
-
-}
-
-// 1 - Fase: Digite um numero de 0 á 100 ( Eu tiro a media, multiplico por 0.8 e quem tira o resultado mais proximo da meta fica com (0) o segundo fica com (-1) e o ultimo (-2))
-// 2 - Fase: 
